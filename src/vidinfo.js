@@ -1,5 +1,8 @@
 'use strict';
 const { execFileSync, spawnSync } = require("child_process");
+const fs = require('fs');
+const path = require('path');
+const env = require('./env.json');
 
 // Gets metadata about a video file and writes it to a descriptor
 
@@ -29,21 +32,38 @@ function probe(file){
         result.duration = line.trim().match(/^Duration: (\d\d:\d\d:\d\d.\d\d).*/)[1];
       }
       else if(line.trim().match(/^Stream #0:0: Video/)){
-        result.size = line.trim().match(/, (\d+x\d+) /)[1];
+        result.size = line.trim().match(/, (\d+x\d+)(, | \[)/)[1];
         result.fps = line.trim().match(/ (\d+(\.\d+)?) fps/)[1];
       }
     });
     return result;
 }
 
+function getinfo(file){
+  console.log('Probing file for basic metadata...');
+  const result = probe(file);
+  console.log('Gathering border crop info...');
+  result.cropinfo = cropdetect(file);
+  return result;
+}
+
+function rebuildInfo(file){
+  console.log('Gathering file info...');
+  const info = getinfo(file);
+  const base = path.basename(file);
+  const outfile = path.resolve(env.info, base + ".json");
+  fs.writeFileSync(outfile, JSON.stringify(info, null, '  '));
+  console.log(`Wrote info to ${outfile}`);
+}
 
 
 if (require.main === module) {
   // Called directly
   // const cropInfo = cropdetect(process.argv[2]);
   // console.log(cropInfo);
-  const probeInfo = probe(process.argv[2]);
-  console.log(probeInfo);
+  // const probeInfo = probe(process.argv[2]);
+  // console.log(probeInfo);
+  rebuildInfo(process.argv[2]);
 }
 
 
