@@ -44,7 +44,16 @@ function getinfo(file){
   const result = probe(file);
   console.log('Gathering border crop info...');
   result.cropinfo = cropdetect(file);
+  result.cropchoice = choosecrop(result.cropinfo);
   return result;
+}
+
+function choosecrop(cropinfo){
+  const sum = Object.values(cropinfo).reduce((acc,val) => acc + val, 0);
+  const max = Object.entries(cropinfo).reduce((acc,[k,v]) => {
+    return v > acc[1] ? [k,v] : acc
+  }, ['',0]);
+  return max[0].replace(/^crop=/, '');
 }
 
 function rebuildInfo(file){
