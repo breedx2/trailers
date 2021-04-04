@@ -14,18 +14,23 @@ function gencmdFromFile(file){
   const base = path.basename(file);
   const metafile = path.resolve(env.info, base + ".json");
   const meta = require(metafile);
+  const start = meta.start ? `-ss ${meta.start}` : '';
+  const len = meta.len ? `-t ${meta.len}` : '';
 
   const vf = buildVf(meta);
   const volumepart = buildVol(meta);
   const outfile = path.resolve(env.out, base + ".flv");
   // ${croppart} \
-  const cmd = `ffmpeg -i '${file}' \
+  const cmd = `ffmpeg \
+    ${start} \
+    -i '${file}' \
     -vf '${vf}' \
     -c:v libx264 \
     -crf 18 -c:a aac -ar 44100 -ac 2 \
     ${volumepart} \
     -r 23.976 \
     -max_muxing_queue_size 9999 \
+    ${len} \
     '${outfile}'
   `;
   return cmd.replace(/\s+/g, ' ');
