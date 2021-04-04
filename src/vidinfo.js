@@ -66,6 +66,18 @@ function rebuildInfo(file){
   const info = getinfo(file);
   const base = path.basename(file);
   const outfile = path.resolve(env.info, base + ".json");
+  if(fs.existsSync(outfile)){
+    console.log("Output exists, reading any extra user content...");
+    const oldInfo = JSON.parse(fs.readFileSync(outfile));
+    if(oldInfo.start) {
+      console.log(`User specified start: ${oldInfo.start}`);
+      info.start = oldInfo.start;
+    }
+    if(oldInfo.len) {
+      console.log(`User specified length: ${oldInfo.len}`);
+      info.len = oldInfo.len;
+    }
+  }
   fs.writeFileSync(outfile, JSON.stringify(info, null, '  '));
   console.log(`Wrote info to ${outfile}`);
 }
