@@ -73,13 +73,8 @@ function rebuildInfo(file){
 
 if (require.main === module) {
   // Called directly
-  // const cropInfo = cropdetect(process.argv[2]);
-  // console.log(cropInfo);
-  // const probeInfo = probe(process.argv[2]);
-  // console.log(probeInfo);
   rebuildInfo(process.argv[2]);
 }
-
 
 module.exports = {
   cropdetect
