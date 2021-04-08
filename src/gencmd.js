@@ -6,34 +6,32 @@ const env = require('./env.json');
 // Given metadata about a file, compute the ffmpeg commandline that we
 // will want to run
 
-// ffmpeg -i test.mkv -c:v libx264 -vf scale=-1:720 -crf 18 -c:a aac -ar 44100 -ac 2 test.720p2.flv
-
-
 // Given a video file, generate the ffmpeg command to normalize it
 function gencmdFromFile(file){
   const base = path.basename(file);
   const metafile = path.resolve(env.info, base + ".json");
   const meta = require(metafile);
-  const start = meta.start ? `-ss ${meta.start}` : '';
-  const len = meta.len ? `-t ${meta.len}` : '';
+  const start = meta.start ? ['-ss', `${meta.start}`] : [];
+  const len = meta.len ? ['-t', `${meta.len}`] : [];
 
   const vf = buildVf(meta);
   const volumepart = buildVol(meta);
   const outfile = path.resolve(env.out, base + ".flv");
-  // ${croppart} \
-  const cmd = `ffmpeg \
-    ${start} \
-    -i '${file}' \
-    -vf '${vf}' \
-    -c:v libx264 \
-    -crf 18 -c:a aac -ar 44100 -ac 2 \
-    ${volumepart} \
-    -r 23.976 \
-    -max_muxing_queue_size 9999 \
-    ${len} \
-    '${outfile}'
-  `;
-  return cmd.replace(/\s+/g, ' ');
+  return {
+    cmd: 'ffmpeg',
+    args: [
+      start,
+      '-i', file,
+      '-vf', vf,
+      '-c:v', 'libx264',
+      '-crf', '18', '-c:a', 'aac', '-ar', '44100', '-ac', '2',
+      volumepart,
+      '-r', '23.976',
+      '-max_muxing_queue_size', '9999',
+      len,
+      outfile
+    ].filter(x => x !== '').flat()
+  }
 }
 
 function buildVf(meta){
@@ -81,7 +79,7 @@ function buildCrop(meta){
 function buildVol(meta){
   const v = meta.maxvol.replace(/^-/, '');
   if(v === '0.0dB') return '';
-  return `-filter:a "volume=${v}"`
+  return ['-filter:a', `volume=${v}`];
 }
 
 function getDimensions(meta){
@@ -98,7 +96,6 @@ if (require.main === module) {
   console.log(cmd);
 }
 
-
 module.exports = {
-
+  gencmdFromFile
 };
