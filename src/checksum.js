@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const fs = require('fs');
 
 function sha1sum(file){
   const hash = crypto.createHash('sha1');

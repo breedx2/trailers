@@ -9,17 +9,11 @@ const makeTrailer = require('./maketrailer');
 
 // Makes all missing trailers
 
-function isValidFileExtension(filename){
-  const validExtensions = ['.mkv', '.mp4', '.webm'];
-  const extension = path.extname(filename.toLowerCase());
-  return validExtensions.includes(extension);
-}
-
 const dirEnts = fs.readdirSync(env.original, { withFileTypes: true});
 
 dirEnts.filter(de => de.isFile())
   .map(de => de.name)
-  .filter(isValidFileExtension)
+  .filter(filenames.isVideoFileExtension)
   .map(infile => [infile, filenames.outfile(infile)])
   .filter(([infile,outfile]) => !fs.existsSync(outfile))
   .forEach(([infile,outfile]) => {

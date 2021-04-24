@@ -3,6 +3,7 @@ const { execFileSync, spawnSync } = require("child_process");
 const fs = require('fs');
 const env = require('./env.json');
 const filenames = require('./filenames');
+const checksum = require('./checksum');
 
 // Gets metadata about a video file and writes it to a descriptor
 
@@ -50,6 +51,8 @@ function getinfo(file){
   result.maxvol = volumedetect(file);
   result.cropinfo = cropdetect(file);
   result.cropchoice = choosecrop(result.cropinfo);
+  console.log(`Building checksum...`);
+  result.original_checksum = checksum.sha1sum(file);
   return result;
 }
 
@@ -82,16 +85,20 @@ function rebuildInfo(file){
 }
 
 // Returns true if the meta file is missing or if the video file is newer
-function metafileMissingOrOlder(originalFile){
+function metaNeedsUpdate(originalFile){
   const meta = filenames.metafile(originalFile);
   if(!fs.existsSync(meta)) {
     return true;
   }
   const ostats = fs.statSync(originalFile);
   const mstats = fs.statSync(meta);
-  return ostats.mtimeMs > mstats.mtimeMs;
+  if(ostats.mtimeMs > mstats.mtimeMs){
+    return true;
+  }
+  const info = require(meta);
+  const sha = checksum.sha1sum(originalFile);
+  return sha !== info.original_checksum;
 }
-
 
 if (require.main === module) {
   // Called directly
@@ -101,5 +108,5 @@ if (require.main === module) {
 module.exports = {
   cropdetect,
   rebuildInfo,
-  metafileMissingOrOlder
+  metaNeedsUpdate
 }

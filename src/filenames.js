@@ -15,7 +15,14 @@ function metafile(originalFile){
   return path.resolve(env.info, base + ".json");
 }
 
+function isVideoFileExtension(filename){
+  const validExtensions = ['.mkv', '.mp4', '.webm'];
+  const extension = path.extname(filename.toLowerCase());
+  return validExtensions.includes(extension);
+}
+
 module.exports = {
   outfile,
-  metafile
+  metafile,
+  isVideoFileExtension
 }

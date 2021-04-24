@@ -10,7 +10,7 @@ if (require.main === module) {
 }
 
 function makeTrailer(file) {
-  if(vidinfo.metafileMissingOrOlder(file)){
+  if(vidinfo.metaNeedsUpdate(file)){
     vidinfo.rebuildInfo(file);
   }
   const cmd = gencmd.gencmdFromFile(file);
