@@ -22,6 +22,13 @@ Create this file `env.json` and put your paths into it:
 
 # recipes
 
+## make trailer reel
+
+This will make a 90 minute trailer reel.
+
+```
+node src/makereel.js
+```
 
 ## update all metadata
 This will create metadata where missing and recompute
