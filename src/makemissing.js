@@ -5,6 +5,7 @@ const path = require('path');
 const { execFileSync, spawnSync } = require("child_process");
 const fs = require('fs');
 const filenames = require('./filenames');
+const makeTrailer = require('./maketrailer');
 
 // Makes all missing trailers
 
@@ -23,9 +24,5 @@ dirEnts.filter(de => de.isFile())
   .filter(([infile,outfile]) => !fs.existsSync(outfile))
   .forEach(([infile,outfile]) => {
     console.log(`Need: ${outfile}`);
-    const cmd = `node ${__dirname}/maketrailer.js "${env.original}/${infile}"`;
-    console.log(cmd);
-
-    // execFileSync(cmd.cmd, cmd.args, {stdio: 'inherit'});
-
+    makeTrailer(`${env.original}/${infile}`);
   });
