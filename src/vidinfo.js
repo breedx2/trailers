@@ -4,6 +4,7 @@ const fs = require('fs');
 const env = require('./env.json');
 const filenames = require('./filenames');
 const checksum = require('./checksum');
+const volumedetect = require('./volumedetect');
 
 // Gets metadata about a video file and writes it to a descriptor
 
@@ -20,13 +21,6 @@ function cropdetect(file){
     if(count > 10) result[crop] = parseInt(count);
   });
   return result;
-}
-
-function volumedetect(file){
-  console.log('Gathering max volume from file...');
-  const script = `${__dirname}/../scripts/volumedetect.sh`;
-  const cmdResult = execFileSync(script, [file]).toString().trim();
-  return cmdResult.replace(/^.*max_volume: /, '').replace(/ dB/, 'dB');
 }
 
 function probe(file){
@@ -69,7 +63,7 @@ function rebuildInfo(file){
   const info = getinfo(file);
   const metafile = filenames.metafile(file);
   if(fs.existsSync(metafile)){
-    console.log("Output exists, reading any extra user content...");
+    console.log("Output exists, reading extra user content...");
     const oldInfo = JSON.parse(fs.readFileSync(metafile));
     if(oldInfo.start) {
       console.log(`User specified start: ${oldInfo.start}`);
