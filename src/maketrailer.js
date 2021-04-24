@@ -3,11 +3,20 @@ const { execFileSync, spawnSync } = require("child_process");
 const vidinfo = require('./vidinfo.js');
 const gencmd = require('./gencmd.js');
 
-const file = process.argv[2];
+if (require.main === module) {
+  const originalFile = process.argv[2];
+  if(vidinfo.metafileMissingOrOlder(originalFile)){
+    vidinfo.rebuildInfo(originalFile);
+  }
+  makeTrailer(originalFile);
+}
 
-// TBD re-run vidinfo here always since it's not too slow?
 
-const cmd = gencmd.gencmdFromFile(file);
-console.log(cmd)
-execFileSync(cmd.cmd, cmd.args, {stdio: 'inherit'});
-// spawnSync(cmd.cmd, cmd.args);
+function makeTrailer(file) {
+  const cmd = gencmd.gencmdFromFile(file);
+  console.log(cmd)
+  execFileSync(cmd.cmd, cmd.args, {stdio: 'inherit'});
+  // spawnSync(cmd.cmd, cmd.args);
+}
+
+module.exports = makeTrailer;

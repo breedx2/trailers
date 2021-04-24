@@ -1,22 +1,22 @@
 'use strict'
 
-const path = require('path');
 const env = require('./env.json');
+const filenames = require('./filenames');
 
 // Given metadata about a file, compute the ffmpeg commandline that we
 // will want to run
 
 // Given a video file, generate the ffmpeg command to normalize it
 function gencmdFromFile(file){
-  const base = path.basename(file);
-  const metafile = path.resolve(env.info, base + ".json");
+  const metafile = filenames.metafile(file);
   const meta = require(metafile);
   const start = meta.start ? ['-ss', `${meta.start}`] : [];
   const len = meta.len ? ['-t', `${meta.len}`] : [];
 
-  const vf = buildVf(meta);
+  const vf = buildVf(meta);const { execFileSync, spawnSync } = require("child_process");
+  const fs = require('fs');
   const volumepart = buildVol(meta);
-  const outfile = path.resolve(env.out, base + ".flv");
+  const outfile = filenames.outfile(file);
   return {
     cmd: 'ffmpeg',
     args: [

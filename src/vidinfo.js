@@ -1,8 +1,8 @@
 'use strict';
 const { execFileSync, spawnSync } = require("child_process");
 const fs = require('fs');
-const path = require('path');
 const env = require('./env.json');
+const filenames = require('./filenames');
 
 // Gets metadata about a video file and writes it to a descriptor
 
@@ -64,11 +64,10 @@ function choosecrop(cropinfo){
 function rebuildInfo(file){
   console.log('Gathering file info...');
   const info = getinfo(file);
-  const base = path.basename(file);
-  const outfile = path.resolve(env.info, base + ".json");
-  if(fs.existsSync(outfile)){
+  const metafile = filenames.metafile(file);
+  if(fs.existsSync(metafile)){
     console.log("Output exists, reading any extra user content...");
-    const oldInfo = JSON.parse(fs.readFileSync(outfile));
+    const oldInfo = JSON.parse(fs.readFileSync(metafile));
     if(oldInfo.start) {
       console.log(`User specified start: ${oldInfo.start}`);
       info.start = oldInfo.start;
@@ -78,8 +77,19 @@ function rebuildInfo(file){
       info.len = oldInfo.len;
     }
   }
-  fs.writeFileSync(outfile, JSON.stringify(info, null, '  '));
-  console.log(`Wrote info to ${outfile}`);
+  fs.writeFileSync(metafile, JSON.stringify(info, null, '  '));
+  console.log(`Wrote info to ${metafile}`);
+}
+
+// Returns true if the meta file is missing or if the video file is newer
+function metafileMissingOrOlder(originalFile){
+  const meta = filenames.metafile(originalFile);
+  if(!fs.existsSync(meta)) {
+    return true;
+  }
+  const ostats = fs.statSync(originalFile);
+  const mstats = fs.statSync(meta);
+  return ostats.mtimeMs > mstats.mtimeMs;
 }
 
 
@@ -89,5 +99,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  cropdetect
+  cropdetect,
+  rebuildInfo,
+  metafileMissingOrOlder
 }
