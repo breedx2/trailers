@@ -5,7 +5,7 @@
 // If hash of original is missing, computes it
 
 const path = require('path');
-const env = require('./env.json');
+const env = require('../env.json');
 const { execFileSync, spawnSync } = require("child_process");
 const fs = require('fs');
 const vidinfo = require('./vidinfo');

@@ -1,6 +1,6 @@
 'use strict';
 
-const env = require('./env.json');
+const env = require('../env.json');
 const path = require('path');
 
 // Given an original file, return the name of the target/output file

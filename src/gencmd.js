@@ -1,6 +1,6 @@
 'use strict'
 
-const env = require('./env.json');
+const env = require('../env.json');
 const filenames = require('./filenames');
 
 // Given metadata about a file, compute the ffmpeg commandline that we

@@ -1,7 +1,7 @@
 'use strict';
 const { execFileSync, spawnSync } = require("child_process");
 const fs = require('fs');
-const env = require('./env.json');
+const env = require('../env.json');
 const filenames = require('./filenames');
 const checksum = require('./checksum');
 const volumedetect = require('./volumedetect');

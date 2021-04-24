@@ -1,6 +1,6 @@
 'use strict';
 
-const env = require('./env.json');
+const env = require('../env.json');
 const path = require('path');
 const { execFileSync, spawnSync } = require("child_process");
 const fs = require('fs');
