@@ -29,8 +29,8 @@ concatFirstPass();
 console.log('Files joined!  Time for final encode...');
 finalEncode();
 console.log('Cleaning up temp...');
-fs.rm(TEMP_INDEX_FILE, () => { });
-fs.rm(TEMP_FLV, () => { });
+fs.unlink(TEMP_INDEX_FILE, () => { });
+fs.unlink(TEMP_FLV, () => { });
 console.log(`All done: ${FINAL_FLV}`);
 
 function finalEncode(){
