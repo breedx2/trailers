@@ -6,7 +6,7 @@ const path = require('path');
 const filenames = require('./filenames');
 const { execFileSync } = require("child_process");
 
-const TARGET_LENGTH_MINUTES = 90;
+const TARGET_LENGTH_MINUTES = 120; // 90
 const TEMP_INDEX_FILE = '/tmp/trailer-reel-files.txt';
 const TEMP_FLV = 'trailers.tmp.flv';
 const FINAL_FLV = 'trailers.flv';
@@ -65,7 +65,7 @@ function getShuffledFiles(){
     .map(de => de.name)
     .filter(file => file.endsWith('.flv'))
     .map(addLength);
-  return shuffle(files);
+  return multiShuffle(files);
 }
 
 function addLength(file){
@@ -82,6 +82,13 @@ function toSeconds(len){
   return parseInt(60*60*parts[0]) +
           parseInt(60*parts[1]) +
           parseFloat(parts[2]);
+}
+
+function multiShuffle(array){
+  for(let i=0; i < 10; i++){
+    array = shuffle(array);
+  }
+  return array;
 }
 
 function shuffle(array) {
