@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/breedx2/trailers/issues"
   },
-  "homepage": "https://github.com/breedx2/trailers#readme"
+  "homepage": "https://github.com/breedx2/trailers#readme",
+  "devDependencies": {
+    "commander": "^11.1.0"
+  }
 }

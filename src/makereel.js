@@ -5,19 +5,39 @@ const fs = require('fs');
 const path = require('path');
 const filenames = require('./filenames');
 const { execFileSync } = require("child_process");
+const { program } = require('commander');
 
-const TARGET_LENGTH_MINUTES = 120; // 90
+const DEFAULT_LENGTH_MINUTES = 120;
 const TEMP_INDEX_FILE = '/tmp/trailer-reel-files.txt';
 const TEMP_FLV = 'trailers.tmp.flv';
 const FINAL_FLV = 'trailers.flv';
 
-const shuffled = getShuffledFiles();
+
+program.name('makereel')
+  .description('Makes the trailer reel')
+  .option('-s --strategy <strat>', 'file list strategy', 'SHUFFLE')
+  .option('-d --duration <min>', 'target duration in minutes', DEFAULT_LENGTH_MINUTES)
+  .parse();
+
+const options = program.opts();
+console.log(options)
+
+if(!['SHUFFLE', 'NEWEST'].includes(options.strategy)){
+  console.log('strategy must be one of SHUFFLE or NEWEST')
+  process.exit(1);
+}
+
+const strategy = options.strategy;
+const targetLengthMinutes = options.duration;
+
+const fileList = getFileList(strategy);
+
 let totSec = 0;
 
 const fd = fs.openSync(TEMP_INDEX_FILE, 'w');
 
-while(shuffled.length && (totSec < TARGET_LENGTH_MINUTES * 60)) {
-  const item = shuffled.pop();
+while(fileList.length && (totSec < targetLengthMinutes * 60)) {
+  const item = fileList.pop();
   const escaped = item[0].replace(/'/g, "'\\''");
   fs.writeFileSync(fd, `file '${env.out}/${escaped}\n`);
   totSec += item[1];
@@ -59,13 +79,39 @@ function concatFirstPass(){
   execFileSync('ffmpeg', args, {stdio: 'inherit'});
 }
 
+function getFileList(strategy){
+  switch(strategy){
+    case 'SHUFFLE':
+      return getShuffledFiles();
+    case 'NEWEST':
+      return getNewestFirst();
+  }
+}
+
 function getShuffledFiles(){
+  console.log('Getting shuffled file list...');
+  const files = getFlvFiles();
+  return multiShuffle(files);
+}
+
+function getNewestFirst(){
+  console.log('Getting files with newest first...')
+  const files = getFlvFiles();
+  const mappedFiles = files.map(item => { 
+    const fullpath = path.resolve(env.out, item[0]);
+    const stat = fs.statSync(fullpath);
+    return [item[0], item[1], stat.mtimeMs];
+  });
+  mappedFiles.sort((a,b) => a[2] - b[2]);
+  return mappedFiles.map(item => item.slice(0,2));
+}
+
+function getFlvFiles(){
   const dirEnts = fs.readdirSync(env.out, { withFileTypes: true});
-  const files = dirEnts.filter(de => de.isFile())
+  return dirEnts.filter(de => de.isFile())
     .map(de => de.name)
     .filter(file => file.endsWith('.flv'))
     .map(addLength);
-  return multiShuffle(files);
 }
 
 function addLength(file){
