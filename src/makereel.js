@@ -15,14 +15,14 @@ const FINAL_FLV = 'trailers.flv';
 
 program.name('makereel')
   .description('Makes the trailer reel')
-  .option('-s --strategy <strat>', 'file list strategy', 'SHUFFLE')
+  .option('-s --strategy <strat>', 'file list strategy', 'SMART')
   .option('-d --duration <min>', 'target duration in minutes', DEFAULT_LENGTH_MINUTES)
   .parse();
 
 const options = program.opts();
 console.log(options)
 
-if(!['SHUFFLE', 'NEWEST'].includes(options.strategy)){
+if(!['SHUFFLE', 'NEWEST', 'SMART'].includes(options.strategy)){
   console.log('strategy must be one of SHUFFLE or NEWEST')
   process.exit(1);
 }
@@ -31,7 +31,6 @@ const strategy = options.strategy;
 const targetLengthMinutes = options.duration;
 
 const fileList = getFileList(strategy);
-
 let totSec = 0;
 
 const fd = fs.openSync(TEMP_INDEX_FILE, 'w');
@@ -67,7 +66,6 @@ function finalEncode(){
   execFileSync('ffmpeg', args, {stdio: 'inherit'});
 }
 
-
 function concatFirstPass(){
   const args = [
     '-f', 'concat',
@@ -85,6 +83,8 @@ function getFileList(strategy){
       return getShuffledFiles();
     case 'NEWEST':
       return getNewestFirst();
+    case 'SMART':
+      return getSmartyFiles();
   }
 }
 
@@ -95,7 +95,7 @@ function getShuffledFiles(){
 }
 
 function getNewestFirst(){
-  console.log('Getting files with newest first...')
+  console.log('Getting files with newest first...');
   const files = getFlvFiles();
   const mappedFiles = files.map(item => { 
     const fullpath = path.resolve(env.out, item[0]);
@@ -104,6 +104,20 @@ function getNewestFirst(){
   });
   mappedFiles.sort((a,b) => a[2] - b[2]);
   return mappedFiles.map(item => item.slice(0,2));
+}
+
+function getSmartyFiles(){
+  console.log('Getting files kinda smartly...');
+  const files = getNewestFirst();
+  const half = files.length / 2;
+  let newest = files.slice(0,half);
+  const older = files.slice(half);
+  // Shuffle the newest stuff
+  console.log('Shuffling the newest half...');
+  newest = multiShuffle(newest);
+  const reconstituted = newest.concat(older);
+  console.log('Now probabilistic sorting the conjoined twin....');
+  return pshuffle(reconstituted, 0.50);
 }
 
 function getFlvFiles(){
@@ -142,6 +156,17 @@ function shuffle(array) {
   while (i--) {
     const ri = Math.floor(Math.random() * (i + 1));
     [array[i], array[ri]] = [array[ri], array[i]];
+  }
+  return array;
+}
+
+function pshuffle(array, probability) {
+  let i = array.length;
+  while (i--) {
+    if(Math.random() < probability){
+      const ri = Math.floor(Math.random() * (i + 1));
+      [array[i], array[ri]] = [array[ri], array[i]];
+    }
   }
   return array;
 }
