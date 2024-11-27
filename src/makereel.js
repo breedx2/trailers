@@ -23,7 +23,7 @@ const options = program.opts();
 console.log(options)
 
 if(!['SHUFFLE', 'NEWEST', 'SMART'].includes(options.strategy)){
-  console.log('strategy must be one of SHUFFLE or NEWEST')
+  console.log('strategy must be one of SHUFFLE, NEWEST, or SMART')
   process.exit(1);
 }
 
